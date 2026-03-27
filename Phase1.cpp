@@ -3,54 +3,61 @@
 #include <string>
 using namespace std;
 
-class OS {
+class OS
+{
 private:
-    char M[100][4];   // Memory
-    char IR[4];       // Instruction Register
-    char R[4];        // General Register
-    int IC;           // Instruction Counter
-    int SI;           // Service Interrupt
-    bool C;           // Toggle flag
+    char M[100][4];
+    char IR[4];
+    char R[4];
+    int IC;
+    int SI;
+    bool C;
 
     ifstream fin;
     ofstream fout;
     string line;
 
 public:
-
-    // 🔹 Initialize system
-    void init() {
-        for(int i=0;i<100;i++)
-            for(int j=0;j<4;j++)
+    void init()
+    {
+        for (int i = 0; i < 100; i++)
+            for (int j = 0; j < 4; j++)
                 M[i][j] = ' ';
 
         IC = 0;
         SI = 0;
         C = false;
 
-        for(int i=0;i<4;i++) {
+        for (int i = 0; i < 4; i++)
+        {
             IR[i] = ' ';
             R[i] = ' ';
         }
     }
 
-    // 🔹 Convert operand to address
-    int getAddr() {
-        return (IR[2]-'0')*10 + (IR[3]-'0');
+    int getAddr()
+    {
+        return (IR[2] - '0') * 10 + (IR[3] - '0');
     }
 
-    // 🔹 MOS (Master Mode)
-    void MOS() {
+    void MOS()
+    {
         int addr = getAddr();
 
-        if(SI == 1) { // READ
+        if (SI == 1)
+        {
             getline(fin, line);
             int k = 0;
 
-            for(int i=0;i<10;i++) {
-                for(int j=0;j<4;j++) {
-                    if(k < line.size())
-                        M[addr][j] = line[k++];
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (k < line.size())
+                    {
+                        M[addr][j] = line[k];
+                        k++;
+                    }
                     else
                         M[addr][j] = ' ';
                 }
@@ -58,109 +65,128 @@ public:
             }
         }
 
-        else if(SI == 2) { // WRITE
-            for(int i=0;i<10;i++) {
-                for(int j=0;j<4;j++)
+        else if (SI == 2)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 4; j++)
                     fout << M[addr][j];
                 addr++;
             }
             fout << endl;
         }
 
-        else if(SI == 3) { // HALT
-            fout << "\nJOB TERMINATED\n\n";
+        else if (SI == 3)
+        {
+            fout << "\n------------------------------------------------------------------ \n";
         }
 
         SI = 0;
     }
 
-    // 🔹 Execute user program (Slave Mode)
-    void EXECUTE() {
-        while(true) {
+    void EXECUTE()
+    {
+        while (true)
+        {
 
-            // Fetch
-            for(int i=0;i<4;i++)
+            for (int i = 0; i < 4; i++)
+            {
                 IR[i] = M[IC][i];
+            }
+
             IC++;
 
-            // Decode
-            if(IR[0]=='G' && IR[1]=='D') {
+            if (IR[0] == 'G' && IR[1] == 'D')
+            {
                 SI = 1;
                 MOS();
             }
 
-            else if(IR[0]=='P' && IR[1]=='D') {
+            else if (IR[0] == 'P' && IR[1] == 'D')
+            {
                 SI = 2;
                 MOS();
             }
 
-            else if(IR[0]=='H') {
+            else if (IR[0] == 'H')
+            {
                 SI = 3;
                 MOS();
                 break;
             }
 
-            else if(IR[0]=='L' && IR[1]=='R') {
+            else if (IR[0] == 'L' && IR[1] == 'R')
+            {
                 int addr = getAddr();
-                for(int i=0;i<4;i++)
+                for (int i = 0; i < 4; i++)
                     R[i] = M[addr][i];
             }
 
-            else if(IR[0]=='S' && IR[1]=='R') {
+            else if (IR[0] == 'S' && IR[1] == 'R')
+            {
                 int addr = getAddr();
-                for(int i=0;i<4;i++)
+                for (int i = 0; i < 4; i++)
                     M[addr][i] = R[i];
             }
 
-            else if(IR[0]=='C' && IR[1]=='R') {
+            else if (IR[0] == 'C' && IR[1] == 'R')
+            {
                 int addr = getAddr();
                 C = true;
-                for(int i=0;i<4;i++)
-                    if(R[i] != M[addr][i])
+                for (int i = 0; i < 4; i++)
+                    if (R[i] != M[addr][i])
                         C = false;
             }
 
-            else if(IR[0]=='B' && IR[1]=='T') {
+            else if (IR[0] == 'B' && IR[1] == 'T')
+            {
                 int addr = getAddr();
-                if(C)
+                if (C == true)
                     IC = addr;
             }
         }
     }
 
-    // 🔹 Load program
-    void LOAD() {
+    void LOAD()
+    {
         fin.open("input.txt");
         fout.open("output.txt");
 
-        if(!fin) {
+        if (!fin)
+        {
             cout << "Error opening input file\n";
             return;
         }
 
         int mem_ptr = 0;
 
-        while(getline(fin, line)) {
+        while (getline(fin, line))
+        {
 
-            if(line.find("$AMJ") != string::npos) {
+            if (line.find("$AMJ") < line.size())
+            {
                 init();
                 mem_ptr = 0;
             }
 
-            else if(line.find("$DTA") != string::npos) {
+            else if (line.find("$DTA") < line.size())
+            {
                 EXECUTE();
             }
 
-            else if(line.find("$END") != string::npos) {
+            else if (line.find("$END") < line.size())
+            {
                 printMemory();
-                fout << "-----------------------------\n";
             }
 
-            else {
+            else
+            {
                 int k = 0;
-                while(k < line.size()) {
-                    for(int j=0;j<4;j++) {
-                        if(k < line.size())
+                while (k < line.size())
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (k < line.size())
                             M[mem_ptr][j] = line[k++];
                         else
                             M[mem_ptr][j] = ' ';
@@ -174,21 +200,21 @@ public:
         fout.close();
     }
 
-    // 🔹 Print memory (for debugging/viva)
-    void printMemory() {
-        cout << "\n--- MEMORY DUMP ---\n";
-        for(int i=0;i<100;i++) {
+    void printMemory()
+    {
+        cout << "\nMEMORY REPRESENTATION\n";
+        for (int i = 0; i < 100; i++)
+        {
             cout << "M[" << i << "] : ";
-            for(int j=0;j<4;j++)
+            for (int j = 0; j < 4; j++)
                 cout << M[i][j];
             cout << endl;
-
-            if(i % 10 == 9) cout << endl;
         }
     }
 };
 
-int main() {
+int main()
+{
     OS os;
     os.LOAD();
     cout << "Execution Complete. Check output.txt\n";
