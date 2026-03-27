@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <string>
 using namespace std;
 
 class OS
@@ -78,7 +77,7 @@ public:
 
         else if (SI == 3)
         {
-            fout << "\n------------------------------------------------------------------ \n";
+            fout << "\n\n";
         }
 
         SI = 0;
@@ -158,7 +157,7 @@ public:
             return;
         }
 
-        int mem_ptr = 0;
+        int ptr = 0;
 
         while (getline(fin, line))
         {
@@ -166,7 +165,7 @@ public:
             if (line.find("$AMJ") < line.size())
             {
                 init();
-                mem_ptr = 0;
+                ptr = 0;
             }
 
             else if (line.find("$DTA") < line.size())
@@ -187,11 +186,11 @@ public:
                     for (int j = 0; j < 4; j++)
                     {
                         if (k < line.size())
-                            M[mem_ptr][j] = line[k++];
+                            M[ptr][j] = line[k++];
                         else
-                            M[mem_ptr][j] = ' ';
+                            M[ptr][j] = ' ';
                     }
-                    mem_ptr++;
+                    ptr++;
                 }
             }
         }
@@ -209,6 +208,9 @@ public:
             for (int j = 0; j < 4; j++)
                 cout << M[i][j];
             cout << endl;
+
+            if (i % 10 == 9)
+                cout << endl;
         }
     }
 };
@@ -217,6 +219,6 @@ int main()
 {
     OS os;
     os.LOAD();
-    cout << "Execution Complete. Check output.txt\n";
+    cout << "Execution Completed.\n";
     return 0;
 }
